@@ -7,10 +7,10 @@ scrape_configs:
       - targets: ['localhost:9090']
 
   # Temporal Researcher Worker - Scrape metrics for memory diagnosis
-  - job_name: 'temporal-researcher-worker'
+  - job_name: 'researcher-worker'
     scheme: http
     static_configs:
-      - targets: ['researcher-worker-dev.railway.internal:9090']
+      - targets: ['researcher-worker.railway.internal:9090']
     scrape_interval: 15s
     scrape_timeout: 10s
     metrics_path: '/metrics'
@@ -18,7 +18,7 @@ scrape_configs:
     relabel_configs:
       - source_labels: [__address__]
         target_label: instance
-        replacement: 'researcher-worker-dev'
+        replacement: 'researcher-worker'
 
   # - job_name: 'example_api'
   #   scheme: http
