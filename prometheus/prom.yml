@@ -6,19 +6,56 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  # Temporal Researcher Worker - Scrape metrics for memory diagnosis
-  - job_name: 'researcher-worker'
+  # ============================================================================
+  # Temporal Researcher Worker - Temporal SDK Metrics (Port 9090)
+  # ============================================================================
+  # Scrapes Temporal SDK metrics (temporal_worker_*, temporal_activity_*, etc.)
+  # These are served by Temporal's Rust-based HTTP server
+
+  - job_name: 'researcher-temporal'
     scheme: http
     static_configs:
       - targets: ['researcher-worker.railway.internal:9090']
     scrape_interval: 15s
     scrape_timeout: 10s
     metrics_path: '/metrics'
-    # Labels to help identify metrics source
     relabel_configs:
       - source_labels: [__address__]
         target_label: instance
         replacement: 'researcher-worker'
+      - target_label: service
+        replacement: 'temporal-sdk'
+      - target_label: component
+        replacement: 'researcher'
+
+  # ============================================================================
+  # Temporal Researcher Worker - Custom Stagehand Metrics (Port 9091)
+  # ============================================================================
+  # Scrapes custom application metrics (stagehand_*, activity_memory_bytes, etc.)
+  # These are served by prometheus_client HTTP server
+  # IMPORTANT: This is on a DIFFERENT PORT than Temporal SDK metrics!
+
+  - job_name: 'researcher-custom'
+    scheme: http
+    static_configs:
+      - targets: ['researcher-worker.railway.internal:9091']
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: '/metrics'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'researcher-worker'
+      - target_label: service
+        replacement: 'custom-metrics'
+      - target_label: component
+        replacement: 'researcher'
+      - target_label: metrics_type
+        replacement: 'stagehand'
+
+  # ============================================================================
+  # Example configurations (commented out)
+  # ============================================================================
 
   # - job_name: 'example_api'
   #   scheme: http
@@ -33,3 +70,31 @@ scrape_configs:
   #   basic_auth:
   #     username: HTTP_AUTH_USERNAME_GOES_HERE
   #     password: HTTP_AUTH_PASSWORD_GOES_HERE
+
+# ============================================================================
+# IMPORTANT NOTES
+# ============================================================================
+#
+# 1. WHY TWO JOBS FOR researcher-worker?
+#    - Temporal SDK metrics (Rust-based) are on port 9090
+#    - Custom Python metrics (prometheus_client) are on port 9091
+#    - These are separate HTTP servers and must be scraped separately
+#
+# 2. After updating this file:
+#    - Redeploy Prometheus service in Railway
+#    - Or: kubectl rollout restart deployment/prometheus (if using K8s)
+#    - Or: docker restart prometheus (if using Docker)
+#
+# 3. Verify scraping is working:
+#    - Prometheus UI: http://prometheus:9090/targets
+#    - Should see both 'researcher-temporal' and 'researcher-custom' as UP (green)
+#
+# 4. Test queries in Prometheus Explore:
+#    - temporal_worker_task_slots_available (from port 9090)
+#    - stagehand_cache_size (from port 9091)
+#
+# 5. Grafana Dashboard:
+#    - Import: grafana/dashboards/stagehand-memory-metrics.json
+#    - All panels should show data after workflows execute
+#
+# ============================================================================
