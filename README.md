@@ -146,6 +146,38 @@ To customize the configuration of Loki, Prometheus, or Tempo:
 
 The pre-configured Grafana connections will continue to work with your customized services.
 
+## Deploying Prometheus via Railway CLI
+
+You can deploy Prometheus directly from the command line using the Railway CLI and the `railway.toml` config at the project root.
+
+### Prerequisites
+
+- [Railway CLI](https://docs.railway.com/guides/cli) installed
+- Authenticated via `railway login`
+
+### Steps
+
+1. **Link the project** (first time only):
+   ```bash
+   railway link
+   ```
+   Select your Railway project and the Prometheus service when prompted.
+
+2. **Deploy**:
+   ```bash
+   railway up
+   ```
+
+The `railway.toml` points to `prometheus/dockerfile` and only triggers rebuilds when files in `prometheus/` change.
+
+### Updating Prometheus config
+
+To update scrape targets or other Prometheus settings, edit `prometheus/prom.yml` and redeploy:
+
+```bash
+railway up
+```
+
 ## Additional Resources
 
 - [Locomotive: a loki transport for railway services](https://railway.com/template/jP9r-f)
