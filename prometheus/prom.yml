@@ -13,7 +13,7 @@ scrape_configs:
   # (http_requests_total, http_request_duration_seconds, etc.)
   # Served on a separate port so metrics are NOT exposed on the public API.
 
-  - job_name: 'api'
+  - job_name: 'api-prod'
     scheme: http
     static_configs:
       - targets: ['api.railway.internal:9090']
@@ -23,9 +23,27 @@ scrape_configs:
     relabel_configs:
       - source_labels: [__address__]
         target_label: instance
-        replacement: 'api'
+        replacement: 'api-prod'
       - target_label: service
         replacement: 'api'
+      - target_label: env
+        replacement: 'prod'
+
+  - job_name: 'api-dev'
+    scheme: http
+    static_configs:
+      - targets: ['api-dev.railway.internal:9090']
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: '/metrics'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'api-dev'
+      - target_label: service
+        replacement: 'api'
+      - target_label: env
+        replacement: 'dev'
 
 # ============================================================================
 # NOTES
