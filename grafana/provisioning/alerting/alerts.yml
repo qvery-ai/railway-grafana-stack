@@ -270,6 +270,7 @@ groups:
 
       # ---------------------------------------------------------------
       # High workflow failure rate (> 5% over 10 min)
+      # Uses clamp_min to handle division by zero when completions are 0
       # ---------------------------------------------------------------
       - uid: high-workflow-failure-rate
         title: High Workflow Failure Rate
@@ -296,7 +297,7 @@ groups:
               to: 0
             model:
               refId: B
-              expr: sum(rate(temporal_workflow_completed[5m]) + rate(temporal_workflow_failed[5m])) by (job)
+              expr: clamp_min(sum(rate(temporal_workflow_completed[5m]) + rate(temporal_workflow_failed[5m])) by (job), 0.001)
           - refId: C
             datasourceUid: "__expr__"
             relativeTimeRange:
@@ -310,6 +311,7 @@ groups:
                 - evaluator:
                     type: gt
                     params: [0]
+
 
       # ---------------------------------------------------------------
       # Activity failure spike
