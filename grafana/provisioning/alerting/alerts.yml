@@ -16,6 +16,7 @@ groups:
         for: 2m
         labels:
           severity: critical
+          job: api
         annotations:
           summary: "API service is unreachable by Prometheus"
           description: "1. Check if the API service is running (Railway dashboard or `railway status`). 2. Verify the /metrics endpoint is accessible. 3. Check Prometheus targets page for scrape errors. 4. Review API service logs for crash loops or OOM kills."
@@ -111,6 +112,7 @@ groups:
         for: 2m
         labels:
           severity: critical
+          job: agents-worker
         annotations:
           summary: "Agents worker is unreachable by Prometheus"
           description: "1. Check if the agents-worker service is running in Railway. 2. Look for OOM kills or crash loops in service logs. 3. Verify the /metrics endpoint is exposed and reachable by Prometheus. 4. Check for recent deployments or config changes."
@@ -134,6 +136,7 @@ groups:
         for: 2m
         labels:
           severity: critical
+          job: etl-worker
         annotations:
           summary: "ETL worker is unreachable by Prometheus"
           description: "1. Check if the etl-worker service is running in Railway. 2. Look for OOM kills or crash loops in service logs. 3. Verify the /metrics endpoint is exposed and reachable by Prometheus. 4. Check for recent deployments or config changes."
@@ -165,6 +168,7 @@ groups:
         for: 2m
         labels:
           severity: critical
+          job: agents-worker
         annotations:
           summary: "Agents worker has zero active pollers — worker is dead or disconnected from Temporal"
           description: "1. Check agents-worker logs for Temporal connection errors or panics. 2. Verify Temporal server is reachable from the worker. 3. Check if the worker process is running but stuck (zombie state). 4. Restart the worker if logs confirm it is unrecoverable."
@@ -188,6 +192,7 @@ groups:
         for: 2m
         labels:
           severity: critical
+          job: etl-worker
         annotations:
           summary: "ETL worker has zero active pollers — worker is dead or disconnected from Temporal"
           description: "1. Check etl-worker logs for Temporal connection errors or panics. 2. Verify Temporal server is reachable from the worker. 3. Check if the worker process is running but stuck (zombie state). 4. Restart the worker if logs confirm it is unrecoverable."
