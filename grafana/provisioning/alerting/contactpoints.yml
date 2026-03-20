@@ -8,12 +8,11 @@ contactPoints:
         type: slack
         settings:
           url: "${SLACK_WEBHOOK_ALERTS}"
-          title: "[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}"
+          title: "[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}{{ if .CommonLabels.job }} — {{ .CommonLabels.job }}{{ end }}"
           text: |
-            **{{ .CommonLabels.alertname }}**
-            Status: {{ .Status | toUpper }}
-            Severity: {{ .CommonLabels.severity }}
-
             {{ range .Alerts }}
+            *{{ .Labels.alertname }}*
+            Job: `{{ .Labels.job }}` | Instance: `{{ .Labels.instance }}`
+            Severity: `{{ .Labels.severity }}`
             {{ .Annotations.summary }}
             {{ end }}

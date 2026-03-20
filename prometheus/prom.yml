@@ -20,12 +20,6 @@ scrape_configs:
     scrape_interval: 15s
     scrape_timeout: 10s
     metrics_path: '/metrics'
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: instance
-        replacement: 'api'
-      - target_label: service
-        replacement: 'api'
 
   # ============================================================================
   # Agents Worker - Temporal SDK Metrics (Port 9090, internal only)
@@ -41,12 +35,6 @@ scrape_configs:
     scrape_interval: 15s
     scrape_timeout: 10s
     metrics_path: '/metrics'
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: instance
-        replacement: 'agents-worker'
-      - target_label: service
-        replacement: 'agents'
 
   # ============================================================================
   # ETL Worker - Temporal SDK Metrics (Port 9090, internal only)
@@ -61,12 +49,6 @@ scrape_configs:
     scrape_interval: 15s
     scrape_timeout: 10s
     metrics_path: '/metrics'
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: instance
-        replacement: 'etl-worker'
-      - target_label: service
-        replacement: 'etl'
 
 # ============================================================================
 # NOTES

@@ -16,7 +16,6 @@ groups:
         for: 2m
         labels:
           severity: critical
-          service: api
         annotations:
           summary: "API service is unreachable by Prometheus"
         data:
@@ -39,7 +38,6 @@ groups:
         for: 5m
         labels:
           severity: critical
-          service: api
         annotations:
           summary: "API 5xx error rate is above 5%"
         data:
@@ -50,7 +48,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: sum(rate(http_requests_total{service="api", status=~"5.."}[5m]))
+              expr: sum(rate(http_requests_total{job="api", status=~"5.."}[5m]))
           - refId: B
             datasourceUid: grafana_prometheus
             relativeTimeRange:
@@ -58,7 +56,7 @@ groups:
               to: 0
             model:
               refId: B
-              expr: sum(rate(http_requests_total{service="api"}[5m]))
+              expr: sum(rate(http_requests_total{job="api"}[5m]))
           - refId: C
             datasourceUid: "__expr__"
             relativeTimeRange:
@@ -83,7 +81,6 @@ groups:
         for: 5m
         labels:
           severity: warning
-          service: api
         annotations:
           summary: "API p95 latency is above 2 seconds"
         data:
@@ -94,7 +91,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{service="api"}[5m])) by (le)) > 2
+              expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="api"}[5m])) by (le)) > 2
 
   - orgId: 1
     name: worker-alerts
@@ -111,7 +108,6 @@ groups:
         for: 2m
         labels:
           severity: critical
-          service: agents
         annotations:
           summary: "Agents worker is unreachable by Prometheus"
         data:
@@ -134,7 +130,6 @@ groups:
         for: 2m
         labels:
           severity: critical
-          service: etl
         annotations:
           summary: "ETL worker is unreachable by Prometheus"
         data:
@@ -165,7 +160,6 @@ groups:
         for: 2m
         labels:
           severity: critical
-          service: agents
         annotations:
           summary: "Agents worker has zero active pollers — worker is dead or disconnected from Temporal"
         data:
@@ -188,7 +182,6 @@ groups:
         for: 2m
         labels:
           severity: critical
-          service: etl
         annotations:
           summary: "ETL worker has zero active pollers — worker is dead or disconnected from Temporal"
         data:
@@ -211,7 +204,6 @@ groups:
         for: 5m
         labels:
           severity: critical
-          service: temporal
         annotations:
           summary: "Activity tasks are waiting > 5s in queue — not enough workers or activity slots"
         data:
@@ -234,7 +226,6 @@ groups:
         for: 5m
         labels:
           severity: critical
-          service: temporal
         annotations:
           summary: "Workflow tasks are waiting > 2s in queue — not enough workers"
         data:
@@ -265,7 +256,6 @@ groups:
         for: 10m
         labels:
           severity: warning
-          service: temporal
         annotations:
           summary: "Worker has fewer than 5 available activity slots — close to saturation"
         data:
@@ -288,7 +278,6 @@ groups:
         for: 10m
         labels:
           severity: warning
-          service: temporal
         annotations:
           summary: "Workflow failure rate is above 5%"
         data:
@@ -332,7 +321,6 @@ groups:
         for: 5m
         labels:
           severity: warning
-          service: temporal
         annotations:
           summary: "Activity failures are elevated — check activity logs"
         data:
@@ -355,7 +343,6 @@ groups:
         for: 5m
         labels:
           severity: warning
-          service: temporal
         annotations:
           summary: "Activity p95 latency is above 60 seconds"
         data:
@@ -378,7 +365,6 @@ groups:
         for: 5m
         labels:
           severity: warning
-          service: temporal
         annotations:
           summary: "gRPC failure rate to Temporal server is above 5%"
         data:
@@ -422,7 +408,6 @@ groups:
         for: 10m
         labels:
           severity: warning
-          service: temporal
         annotations:
           summary: "High sticky cache eviction rate — workflows are replaying frequently, impacting performance"
         data:
