@@ -22,13 +22,40 @@ Alerts are managed as code via Grafana's file-based provisioning. All alert conf
 
 ### Current Alerts
 
-| Alert | PromQL | Severity | Fires After |
-|-------|--------|----------|-------------|
+**API Alerts** (folder: API Alerts)
+
+| Alert | Condition | Severity | Fires After |
+|-------|-----------|----------|-------------|
 | API Target Down | `up{job="api"} == 0` | critical | 2m |
 | API High Error Rate | 5xx rate > 5% | critical | 5m |
 | API High Latency (p95) | p95 > 2s | warning | 5m |
+
+**Worker Alerts** (folder: Worker Alerts)
+
+| Alert | Condition | Severity | Fires After |
+|-------|-----------|----------|-------------|
 | Agents Worker Down | `up{job="agents-worker"} == 0` | critical | 2m |
 | ETL Worker Down | `up{job="etl-worker"} == 0` | critical | 2m |
+
+**Temporal Alerts — Critical** (folder: Temporal Alerts)
+
+| Alert | Condition | Severity | Fires After |
+|-------|-----------|----------|-------------|
+| Agents Worker Dead (No Pollers) | `temporal_num_pollers == 0` | critical | 2m |
+| ETL Worker Dead (No Pollers) | `temporal_num_pollers == 0` | critical | 2m |
+| Activity Queue Backlog | p95 schedule-to-start > 5s | critical | 5m |
+| Workflow Task Queue Backlog | p95 schedule-to-start > 2s | critical | 5m |
+
+**Temporal Alerts — Warning** (folder: Temporal Alerts)
+
+| Alert | Condition | Severity | Fires After |
+|-------|-----------|----------|-------------|
+| Worker Saturated | activity slots < 5 | warning | 10m |
+| High Workflow Failure Rate | failure rate > 5% | warning | 10m |
+| Activity Failure Spike | failures > 0.1/s | warning | 5m |
+| Slow Activities | p95 latency > 60s | warning | 5m |
+| Temporal gRPC Failure Rate | failure rate > 5% | warning | 5m |
+| Sticky Cache Pressure | eviction rate > 1/s | warning | 10m |
 
 ### Adding a New Alert
 
