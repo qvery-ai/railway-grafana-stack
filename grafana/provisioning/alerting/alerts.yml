@@ -314,6 +314,28 @@ groups:
 
 
       # ---------------------------------------------------------------
+      # Workflow task execution failures (non-determinism, workflow bugs)
+      # ---------------------------------------------------------------
+      - uid: workflow-task-execution-failures
+        title: Workflow Task Execution Failures
+        condition: A
+        noDataState: OK
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Workflow task execution failures detected — possible non-determinism or workflow bug"
+        data:
+          - refId: A
+            datasourceUid: grafana_prometheus
+            relativeTimeRange:
+              from: 300
+              to: 0
+            model:
+              refId: A
+              expr: sum(rate(temporal_workflow_task_execution_failed[5m])) by (job) > 0
+
+      # ---------------------------------------------------------------
       # Activity failure spike
       # ---------------------------------------------------------------
       - uid: activity-failure-spike
@@ -401,6 +423,49 @@ groups:
                     params: [0]
 
       # ---------------------------------------------------------------
+      # Long-poll failure rate to Temporal server (> 5%)
+      # ---------------------------------------------------------------
+      - uid: temporal-long-poll-failures
+        title: Temporal Long-Poll Failure Rate High
+        condition: C
+        noDataState: OK
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Long-poll failure rate to Temporal server is above 5% — worker may not be picking up tasks"
+        data:
+          - refId: A
+            datasourceUid: grafana_prometheus
+            relativeTimeRange:
+              from: 300
+              to: 0
+            model:
+              refId: A
+              expr: sum(rate(temporal_long_request_failure[5m])) by (job)
+          - refId: B
+            datasourceUid: grafana_prometheus
+            relativeTimeRange:
+              from: 300
+              to: 0
+            model:
+              refId: B
+              expr: sum(rate(temporal_long_request[5m])) by (job)
+          - refId: C
+            datasourceUid: "__expr__"
+            relativeTimeRange:
+              from: 0
+              to: 0
+            model:
+              refId: C
+              type: math
+              expression: "$A / $B > 0.05"
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+
+      # ---------------------------------------------------------------
       # Sticky cache pressure — high eviction rate
       # ---------------------------------------------------------------
       - uid: sticky-cache-pressure
@@ -421,3 +486,68 @@ groups:
             model:
               refId: A
               expr: sum(rate(temporal_sticky_cache_total_forced_eviction[5m])) by (job) > 1
+
+      # ---------------------------------------------------------------
+      # Sticky cache low hit ratio (> 50% misses)
+      # ---------------------------------------------------------------
+      - uid: sticky-cache-low-hit-ratio
+        title: Sticky Cache Low Hit Ratio
+        condition: C
+        noDataState: OK
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Sticky cache hit ratio is below 50% — workflows are replaying from scratch, degrading performance"
+        data:
+          - refId: A
+            datasourceUid: grafana_prometheus
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              refId: A
+              expr: sum(rate(temporal_sticky_cache_miss[5m])) by (job)
+          - refId: B
+            datasourceUid: grafana_prometheus
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              refId: B
+              expr: clamp_min(sum(rate(temporal_sticky_cache_hit[5m]) + rate(temporal_sticky_cache_miss[5m])) by (job), 0.001)
+          - refId: C
+            datasourceUid: "__expr__"
+            relativeTimeRange:
+              from: 0
+              to: 0
+            model:
+              refId: C
+              type: math
+              expression: "$A / $B > 0.5"
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+
+      # ---------------------------------------------------------------
+      # Workflow task slots saturated
+      # ---------------------------------------------------------------
+      - uid: workflow-worker-saturated
+        title: Workflow Worker Saturated (Low Task Slots)
+        condition: A
+        noDataState: OK
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Workflow worker has fewer than 5 available task slots — close to saturation"
+        data:
+          - refId: A
+            datasourceUid: grafana_prometheus
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              refId: A
+              expr: min(temporal_worker_task_slots_available{worker_type=~"WorkflowWorker|workflow"}) by (job) < 5
