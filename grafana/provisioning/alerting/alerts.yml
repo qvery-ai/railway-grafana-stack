@@ -12,6 +12,7 @@ groups:
       - uid: api-down
         title: API Target Down
         condition: A
+        noDataState: OK
         for: 2m
         labels:
           severity: critical
@@ -34,6 +35,7 @@ groups:
       - uid: api-high-error-rate
         title: API High Error Rate
         condition: C
+        noDataState: OK
         for: 5m
         labels:
           severity: critical
@@ -77,6 +79,7 @@ groups:
       - uid: api-high-latency
         title: API High Latency (p95)
         condition: A
+        noDataState: OK
         for: 5m
         labels:
           severity: warning
@@ -104,6 +107,7 @@ groups:
       - uid: agents-worker-down
         title: Agents Worker Down
         condition: A
+        noDataState: OK
         for: 2m
         labels:
           severity: critical
@@ -126,6 +130,7 @@ groups:
       - uid: etl-worker-down
         title: ETL Worker Down
         condition: A
+        noDataState: OK
         for: 2m
         labels:
           severity: critical
