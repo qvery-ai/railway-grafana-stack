@@ -26,6 +26,7 @@ services:
       - GF_DEFAULT_INSTANCE_NAME=Grafana
       - GF_INSTALL_PLUGINS=grafana-simple-json-datasource,grafana-piechart-panel,grafana-worldmap-panel,grafana-clock-panel
       - PROMETHEUS_INTERNAL_URL=http://prometheus:9090
+      - SLACK_WEBHOOK_ALERTS=${SLACK_WEBHOOK_ALERTS:-https://hooks.slack.com/services/PLACEHOLDER}
 
 volumes:
   prometheus_data:

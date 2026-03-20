@@ -1,0 +1,143 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: api-alerts
+    folder: API Alerts
+    interval: 1m
+    rules:
+      # ---------------------------------------------------------------
+      # API service is down / unreachable by Prometheus
+      # ---------------------------------------------------------------
+      - uid: api-down
+        title: API Target Down
+        condition: A
+        for: 2m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "API service is unreachable by Prometheus"
+        data:
+          - refId: A
+            datasourceUid: grafana_prometheus
+            relativeTimeRange:
+              from: 300
+              to: 0
+            model:
+              refId: A
+              expr: up{job="api"} == 0
+
+      # ---------------------------------------------------------------
+      # High 5xx error rate (> 5% of requests over 5 min)
+      # ---------------------------------------------------------------
+      - uid: api-high-error-rate
+        title: API High Error Rate
+        condition: C
+        for: 5m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "API 5xx error rate is above 5%"
+        data:
+          - refId: A
+            datasourceUid: grafana_prometheus
+            relativeTimeRange:
+              from: 300
+              to: 0
+            model:
+              refId: A
+              expr: sum(rate(http_requests_total{service="api", status=~"5.."}[5m]))
+          - refId: B
+            datasourceUid: grafana_prometheus
+            relativeTimeRange:
+              from: 300
+              to: 0
+            model:
+              refId: B
+              expr: sum(rate(http_requests_total{service="api"}[5m]))
+          - refId: C
+            datasourceUid: "__expr__"
+            relativeTimeRange:
+              from: 0
+              to: 0
+            model:
+              refId: C
+              type: math
+              expression: "$A / $B > 0.05"
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+
+      # ---------------------------------------------------------------
+      # High p95 latency (> 2 seconds over 5 min)
+      # ---------------------------------------------------------------
+      - uid: api-high-latency
+        title: API High Latency (p95)
+        condition: A
+        for: 5m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "API p95 latency is above 2 seconds"
+        data:
+          - refId: A
+            datasourceUid: grafana_prometheus
+            relativeTimeRange:
+              from: 300
+              to: 0
+            model:
+              refId: A
+              expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{service="api"}[5m])) by (le)) > 2
+
+  - orgId: 1
+    name: worker-alerts
+    folder: Worker Alerts
+    interval: 1m
+    rules:
+      # ---------------------------------------------------------------
+      # Agents worker is down
+      # ---------------------------------------------------------------
+      - uid: agents-worker-down
+        title: Agents Worker Down
+        condition: A
+        for: 2m
+        labels:
+          severity: critical
+          service: agents
+        annotations:
+          summary: "Agents worker is unreachable by Prometheus"
+        data:
+          - refId: A
+            datasourceUid: grafana_prometheus
+            relativeTimeRange:
+              from: 300
+              to: 0
+            model:
+              refId: A
+              expr: up{job="agents-worker"} == 0
+
+      # ---------------------------------------------------------------
+      # ETL worker is down
+      # ---------------------------------------------------------------
+      - uid: etl-worker-down
+        title: ETL Worker Down
+        condition: A
+        for: 2m
+        labels:
+          severity: critical
+          service: etl
+        annotations:
+          summary: "ETL worker is unreachable by Prometheus"
+        data:
+          - refId: A
+            datasourceUid: grafana_prometheus
+            relativeTimeRange:
+              from: 300
+              to: 0
+            model:
+              refId: A
+              expr: up{job="etl-worker"} == 0
