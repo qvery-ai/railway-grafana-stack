@@ -15,4 +15,7 @@ contactPoints:
             Job: `{{ .Labels.job }}` | Instance: `{{ .Labels.instance }}`
             Severity: `{{ .Labels.severity }}`
             {{ .Annotations.summary }}
+            {{ if .Annotations.description }}
+            _What to do:_ {{ .Annotations.description }}
+            {{ end }}
             {{ end }}

@@ -18,6 +18,7 @@ groups:
           severity: critical
         annotations:
           summary: "API service is unreachable by Prometheus"
+          description: "1. Check if the API service is running (Railway dashboard or `railway status`). 2. Verify the /metrics endpoint is accessible. 3. Check Prometheus targets page for scrape errors. 4. Review API service logs for crash loops or OOM kills."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -40,6 +41,7 @@ groups:
           severity: critical
         annotations:
           summary: "API 5xx error rate is above 5%"
+          description: "1. Check API logs for error stack traces and common 5xx patterns. 2. Look for recent deployments that may have introduced regressions. 3. Verify downstream dependencies (database, Temporal, external APIs) are healthy. 4. Check if the error is isolated to specific endpoints using per-route metrics."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -83,6 +85,7 @@ groups:
           severity: warning
         annotations:
           summary: "API p95 latency is above 2 seconds"
+          description: "1. Identify slow endpoints from per-route latency metrics. 2. Check database query performance and connection pool usage. 3. Look for resource contention (CPU, memory) on the API service. 4. Verify external API dependencies are responding within SLA."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -110,6 +113,7 @@ groups:
           severity: critical
         annotations:
           summary: "Agents worker is unreachable by Prometheus"
+          description: "1. Check if the agents-worker service is running in Railway. 2. Look for OOM kills or crash loops in service logs. 3. Verify the /metrics endpoint is exposed and reachable by Prometheus. 4. Check for recent deployments or config changes."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -132,6 +136,7 @@ groups:
           severity: critical
         annotations:
           summary: "ETL worker is unreachable by Prometheus"
+          description: "1. Check if the etl-worker service is running in Railway. 2. Look for OOM kills or crash loops in service logs. 3. Verify the /metrics endpoint is exposed and reachable by Prometheus. 4. Check for recent deployments or config changes."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -162,6 +167,7 @@ groups:
           severity: critical
         annotations:
           summary: "Agents worker has zero active pollers — worker is dead or disconnected from Temporal"
+          description: "1. Check agents-worker logs for Temporal connection errors or panics. 2. Verify Temporal server is reachable from the worker. 3. Check if the worker process is running but stuck (zombie state). 4. Restart the worker if logs confirm it is unrecoverable."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -184,6 +190,7 @@ groups:
           severity: critical
         annotations:
           summary: "ETL worker has zero active pollers — worker is dead or disconnected from Temporal"
+          description: "1. Check etl-worker logs for Temporal connection errors or panics. 2. Verify Temporal server is reachable from the worker. 3. Check if the worker process is running but stuck (zombie state). 4. Restart the worker if logs confirm it is unrecoverable."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -206,6 +213,7 @@ groups:
           severity: critical
         annotations:
           summary: "Activity tasks are waiting > 5s in queue — not enough workers or activity slots"
+          description: "1. Check temporal_worker_task_slots_available to see if workers are saturated. 2. Consider scaling up workers or increasing MaxConcurrentActivityExecutionSize. 3. Look for long-running activities that are hogging slots. 4. Check if a specific task queue is disproportionately backlogged."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -228,6 +236,7 @@ groups:
           severity: critical
         annotations:
           summary: "Workflow tasks are waiting > 2s in queue — not enough workers"
+          description: "1. Check if workflow workers are running and have available task slots. 2. Look for sticky cache misses causing excessive replays that block slots. 3. Consider scaling up workers or increasing MaxConcurrentWorkflowTaskExecutionSize. 4. Check Temporal server health if all workers appear healthy."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -258,6 +267,7 @@ groups:
           severity: warning
         annotations:
           summary: "Worker has fewer than 5 available activity slots — close to saturation"
+          description: "1. Check which activities are consuming slots (look for long-running or stuck activities). 2. Consider increasing MaxConcurrentActivityExecutionSize if resources allow. 3. Scale up worker replicas to distribute the load. 4. If slots are stuck, check for activities waiting on external dependencies."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -281,6 +291,7 @@ groups:
           severity: warning
         annotations:
           summary: "Workflow failure rate is above 5%"
+          description: "1. Check workflow error logs to identify failing workflow types. 2. Look for recent code deployments that may have introduced bugs. 3. Verify downstream activity dependencies are healthy. 4. Check if failures are isolated to a specific task queue or workflow type."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -325,6 +336,7 @@ groups:
           severity: warning
         annotations:
           summary: "Workflow task execution failures detected — possible non-determinism or workflow bug"
+          description: "1. Check worker logs for NonDeterminismError — this means workflow code changed in a way that breaks replay of existing executions. 2. Look for recent workflow code deployments. 3. Verify that workflow logic is deterministic (no random, time, or external calls outside activities). 4. If non-determinism is confirmed, consider versioning the workflow or resetting stuck executions."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -347,6 +359,7 @@ groups:
           severity: warning
         annotations:
           summary: "Activity failures are elevated — check activity logs"
+          description: "1. Check worker logs to identify which activity types are failing. 2. Look for external dependency issues (database, APIs, network). 3. Verify retry policies are configured — transient failures should be retried automatically. 4. Check if failures correlate with a recent deployment or config change."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -369,6 +382,7 @@ groups:
           severity: warning
         annotations:
           summary: "Activity p95 latency is above 60 seconds"
+          description: "1. Identify which activity types are slow using per-activity-type metrics. 2. Check if external dependencies (APIs, database) are responding slowly. 3. Look for resource contention (CPU, memory) on the worker. 4. Consider increasing activity timeouts if the slowness is expected, or optimizing the activity logic."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -391,6 +405,7 @@ groups:
           severity: warning
         annotations:
           summary: "gRPC failure rate to Temporal server is above 5%"
+          description: "1. Check Temporal server health and availability. 2. Look for network issues between workers and Temporal (DNS, firewall, TLS). 3. Check if Temporal server is overloaded (high CPU, connection limits). 4. Review worker logs for specific gRPC error codes (UNAVAILABLE, DEADLINE_EXCEEDED, etc.)."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -434,6 +449,7 @@ groups:
           severity: warning
         annotations:
           summary: "Long-poll failure rate to Temporal server is above 5% — worker may not be picking up tasks"
+          description: "1. Long-poll failures mean the worker cannot maintain its polling connection to Temporal — this is a precursor to the worker appearing dead. 2. Check network stability between workers and Temporal server. 3. Verify Temporal server is not rejecting connections (rate limits, max connections). 4. Look for worker-side timeouts or TLS handshake failures in logs."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -477,6 +493,7 @@ groups:
           severity: warning
         annotations:
           summary: "High sticky cache eviction rate — workflows are replaying frequently, impacting performance"
+          description: "1. Too many concurrent workflows are evicting each other from cache. 2. Consider increasing the sticky cache size (WorkflowCacheSize option). 3. Check if the number of unique workflow types has grown unexpectedly. 4. Monitor temporal_sticky_cache_size to see current cache utilization."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -499,6 +516,7 @@ groups:
           severity: warning
         annotations:
           summary: "Sticky cache hit ratio is below 50% — workflows are replaying from scratch, degrading performance"
+          description: "1. Most workflow tasks are replaying full history instead of resuming from cache — this increases latency and Temporal server load. 2. Increase WorkflowCacheSize to hold more workflows in memory. 3. Scale out workers so each handles fewer concurrent workflows. 4. Check if workflows have very long histories that make caching inefficient."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
@@ -542,6 +560,7 @@ groups:
           severity: warning
         annotations:
           summary: "Workflow worker has fewer than 5 available task slots — close to saturation"
+          description: "1. Workflow task slots are nearly exhausted — new workflow tasks will queue up. 2. Check for workflows with large histories causing slow replays that hold slots. 3. Improve sticky cache hit ratio to reduce replay time per task. 4. Scale up workers or increase MaxConcurrentWorkflowTaskExecutionSize if resources allow."
         data:
           - refId: A
             datasourceUid: grafana_prometheus
