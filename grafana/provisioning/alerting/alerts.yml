@@ -1,5 +1,0 @@
-apiVersion: 1
-
-# Alert rules are now managed by Prometheus + Alertmanager.
-# See prometheus/rules/alerts.yml for all alerting rules.
-groups: []

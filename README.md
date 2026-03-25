@@ -1,193 +1,200 @@
-# Grafana Stack on Railway
+# Monitoring Stack on Railway
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template/8TLSQD?referralCode=IFlm92)
+Prometheus + Alertmanager + Grafana deployed on Railway. Metrics collection, alerting with full label preservation, and dashboards.
 
-## What is this template
+## Architecture
 
-This template deploys a complete Grafana observability stack on Railway with just one click! The stack includes four integrated services:
+```
+┌──────────────┐     scrape      ┌───────────────────┐
+│  API /       │  ◄────────────  │                   │
+│  Workers     │    metrics      │    Prometheus      │
+└──────────────┘                 │  (rules + scrape)  │
+                                 └────────┬──────────┘
+                                          │ alerts
+                                          ▼
+                                 ┌───────────────────┐      Slack
+                                 │   Alertmanager     │ ──────────►
+                                 │  (routing + notify)│
+                                 └───────────────────┘
 
-- **Grafana**: The leading open-source analytics and monitoring solution
-- **Loki**: A horizontally-scalable, highly-available log aggregation system
-- **Prometheus**: A powerful metrics collection and alerting system
-- **Tempo**: A high-scale distributed tracing backend
+                                 ┌───────────────────┐
+                                 │     Grafana        │  ◄── dashboards
+                                 │   (visualization)  │
+                                 └───────────────────┘
+```
 
-This template is perfect for teams who need a comprehensive observability solution for their railway project without the hassle of manual configuration and infrastructure management.
+- **Prometheus** — scrapes metrics from services, evaluates alert rules
+- **Alertmanager** — receives firing alerts from Prometheus, groups/deduplicates, sends to Slack with full `job` and `instance` labels
+- **Grafana** — dashboards and metric exploration (alerting is handled by Alertmanager)
 
-### Key Features
+## Project Structure
 
-- **Pre-configured Integration**: _All services come pre-connected_, so Grafana is ready to query your data immediately.
-- **Persistent Storage**: All four services use Railway volumes to ensure your data, dashboards, and configurations persist between updates and deploys.
-- **Version Control**: Pin specific Docker image versions for each service using environment variables.
-- **Customizable**: Fork the repository to customize configuration files for any service. You can take full control and edit anything you'd need to as you scale.
-- **One-Click Deploy**: Get a complete Grafana-based observability stack running in minutes.
+```
+├── prometheus/
+│   ├── Dockerfile
+│   ├── railway.toml
+│   ├── prom.yml              # Scrape config + Alertmanager target
+│   └── alerts.yml            # Alert rules (PromQL)
+│
+├── alertmanager/
+│   ├── Dockerfile
+│   ├── railway.toml
+│   ├── alertmanager.yml      # Slack notification config + routing
+│   └── entrypoint.sh         # Env var substitution at runtime
+│
+├── grafana/
+│   ├── Dockerfile
+│   ├── railway.toml
+│   └── datasources/
+│       └── datasources.yml   # Prometheus datasource
+│
+└── docker-compose.yml         # Local development
+```
 
-## Quick Start Guide
+## Deployment (Railway)
 
-1. Click the "Deploy on Railway" button at the top of this page
-2. Enter your desired Grafana admin username in the `GF_SECURITY_ADMIN_USER` variable
-3. Leave all other variables at their defaults (or customize as needed)
-4. Wait for your stack to deploy (this typically takes 3-5 minutes)
-5. Navigate to the Grafana URL provided by Railway
-6. Log in with your admin username and the auto-generated password found in the `GF_SECURITY_ADMIN_PASSWORD` environment variable
-7. Hook up your applications to the datasources.
-8. Create dashboards, alerts, and explore your data in Grafana!
-
-## Optional Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `GF_SECURITY_ADMIN_USER` | Username for the Grafana admin account | Required input |
-| `GF_SECURITY_ADMIN_PASSWORD` | Password for the Grafana admin account | Auto-generated secure string |
-| `GF_DEFAULT_INSTANCE_NAME` | Name of your Grafana instance | `Grafana on Railway` |
-| `GF_INSTALL_PLUGINS` | Comma-separated list of Grafana plugins to install | `grafana-simple-json-datasource,grafana-piechart-panel,grafana-worldmap-panel,grafana-clock-panel` |
-
-### Internal Service URLs
-
-The Grafana service exposes these environment variables that you can reference in your other Railway applications to easily send data to your observability stack:
-
-| Variable | Description | Usage |
-|----------|-------------|-------|
-| `LOKI_INTERNAL_URL` | Internal URL for the Loki service | Use in your applications to send logs to and query Loki |
-| `PROMETHEUS_INTERNAL_URL` | Internal URL for the Prometheus service | Use in your applications to send metrics to and query Prometheus |
-| `TEMPO_INTERNAL_URL` | Internal URL for the Tempo service | Use in your applications to query Tempo |
-
-These variables make it easy to configure your other Railway services to send telemetry data to your observability stack.
-
-Tempo also exposes a few variables to make it easier to push tracing information to the service using either HTTP or GRPC
-
-| Variable | Description | Usage |
-|----------|-------------|-------|
-| `INTERNAL_HTTP_INGEST` | Internal HTTP ingest server URL for Tempo | Use in your applications to send traces to tempo via HTTP |
-| `INTERNAL_GRPC_INGEST` | Internal GRPC ingest server URL for Tempo | Use in your applications to send traces to tempo via GRPC |
-
-### Version Control
-
-Each service has its own `VERSION` environment variable that can be set independently in each service's settings in the Railway dashboard:
-
-- **Grafana Service**: Set `VERSION` to control the Grafana Docker image tag
-- **Loki Service**: Set `VERSION` to control the Loki Docker image tag
-- **Prometheus Service**: Set `VERSION` to control the Prometheus Docker image tag
-- **Tempo Service**: Set `VERSION` to control the Tempo Docker image tag
-
-By default, all services use the `latest` tag, but you can pin specific versions for stability:
-
-Examples:
-- Grafana: `VERSION=11.5.2`
-- Loki: `VERSION=3.4.2`
-- Prometheus: `VERSION=v3.2.1`
-- Tempo: `VERSION=v2.7.1`
-
-This allows you to update each component independently as needed.
-
-## Project Structure & Services
-
-This template deploys four interconnected services:
-
-### Grafana
-- The central visualization and dashboarding platform
-- Pre-configured with connections to all other services
-- Persistent volume for storing dashboards, users, and configurations
-- Comes with useful plugins pre-installed
-- Exposes internal URLs for other Railway services to connect to Loki, Prometheus, and Tempo
-
-### Prometheus
-- Time-series database for metrics collection
-- Configured with sensible defaults for monitoring
-- Persistent volume for metrics data
-
-### Loki
-- Log aggregation system designed to be cost-effective
-- Horizontally scalable architecture
-- Persistent volume for log storage
-
-### Tempo
-- Distributed tracing system for tracking requests across services
-- High-performance trace storage
-- Persistent volume for trace data
-
-All services are deployed using official Docker images and configured to work together seamlessly.
-
-## Connecting Your Applications
-
-### Using [Locomotive](https://railway.com/template/jP9r-f) for Loki
-
-You can easily ingest *all* of your railway logs into Loki from *any* service using [Locomotive](https://railway.com/template/jP9r-f). Just spin up their template, drop in your Railway API key, the ID of the services you want to monitor, and a link to your new Loki instance and logs will start flowing! no code changes needed anywhere!
-
-### Using OpenTelemetry libraries for Tempo 
-
-Tempo is a bit different than both Prometheus and Loki in that exposes separate GRPC and HTTP servers on ports `:4317` and `:4318` respectively specifically for ingesting your tracing data or "spans".
-
-When configuring your application to send traces to Tempo, please use one of the preconfigured variables in the Tempo service: `INTERNAL_HTTP_INGEST` or `INTERNAL_GRPC_INGEST`.
-
-Another thing to note is that the ingest API endpoint for the HTTP server is `/v1/traces`. For a working example of this in a node.js express API, see `/examples/api/tracer.js` in our GitHub repository.
-
-### Using otherwise standard observability tooling
-
-To send data from your other Railway applications to this observability stack:
-
-1. In your application's Railway service, add environment variables that reference the internal URLs:
-   ```
-   LOKI_URL=${{Grafana.LOKI_INTERNAL_URL}}
-   PROMETHEUS_URL=${{Grafana.PROMETHEUS_INTERNAL_URL}}
-   TEMPO_URL=${{Grafana.TEMPO_INTERNAL_URL}}
-   ```
-2. Configure your application's logging, metrics, or tracing libraries to use these URLs
-3. Your application data will automatically appear in your Grafana dashboards
-
-## Customizing Your Stack
-
-To customize the configuration of Loki, Prometheus, or Tempo:
-
-1. Fork the [GitHub repository](https://github.com/yourusername/grafana-railway-template)
-2. Modify the configuration files in their respective directories
-3. In Railway, disconnect the service you want to customize
-4. Reconnect the service to your forked repository
-5. Deploy the updated service
-
-The pre-configured Grafana connections will continue to work with your customized services.
-
-## Deploying Prometheus via Railway CLI
-
-You can deploy Prometheus directly from the command line using the Railway CLI and the `railway.toml` config at the project root.
-
-### Prerequisites
-
-- [Railway CLI](https://docs.railway.com/guides/cli) installed
-- Authenticated via `railway login`
-
-### Steps
-
-1. **Link the project** (first time only):
-   ```bash
-   railway link
-   ```
-   Select your Railway project and the Prometheus service when prompted.
-
-2. **Deploy**:
-   ```bash
-   railway up
-   ```
-
-The `railway.toml` points to `prometheus/dockerfile` and only triggers rebuilds when files in `prometheus/` change.
-
-### Updating Prometheus config
-
-To update scrape targets or other Prometheus settings, edit `prometheus/prom.yml` and redeploy:
+Each service is deployed from its own directory. From the repo root:
 
 ```bash
+# One-time: link and deploy each service
+railway link   # select prometheus service
+railway up
+
+railway link   # select alertmanager service
+railway up
+
+railway link   # select grafana service
 railway up
 ```
 
-## Additional Resources
+Set **Root Directory** for each service in Railway dashboard:
 
-- [Locomotive: a loki transport for railway services](https://railway.com/template/jP9r-f)
-- [Grafana Documentation](https://grafana.com/docs/grafana/latest/)
-- [Loki Documentation](https://grafana.com/docs/loki/latest/)
-- [Prometheus Documentation](https://prometheus.io/docs/introduction/overview/)
-- [Tempo Documentation](https://grafana.com/docs/tempo/latest/)
-- [Grafana Community Forums](https://community.grafana.com/)
-- [Grafana Plugins Directory](https://grafana.com/grafana/plugins/)
+| Service | Root Directory |
+|---------|---------------|
+| prometheus | `prometheus` |
+| alertmanager | `alertmanager` |
+| grafana | `grafana` |
 
----
+## Local Development
 
-Developed and maintained by [Mykal](https://mykal.codes). For issues or suggestions, please open an issue on the [GitHub repository](https://github.com/MykalMachon/grafana-stack-railway).
+```bash
+docker compose up --build
+```
+
+Services available at:
+- Prometheus: http://localhost:9090
+- Alertmanager: http://localhost:9093
+- Grafana: http://localhost:3000 (admin / yourpassword123)
+
+## Configuration
+
+### Adding Scrape Targets
+
+Edit `prometheus/prom.yml` and add a new job:
+
+```yaml
+- job_name: 'my-service'
+  dns_sd_configs:
+    - names:
+        - 'my-service.railway.internal'
+      type: 'AAAA'
+      port: 9090
+  metrics_path: '/metrics'
+```
+
+### Adding Alert Rules
+
+Edit `prometheus/alerts.yml`. All Prometheus labels (`job`, `instance`, etc.) are preserved in notifications.
+
+```yaml
+- alert: MyNewAlert
+  expr: some_metric{job="my-service"} > threshold
+  for: 5m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Description shown in Slack"
+    description: "What to do when this fires."
+```
+
+For ratio-based alerts (e.g., error rate):
+
+```yaml
+- alert: HighErrorRate
+  expr: >
+    sum by (job, instance) (rate(errors_total[5m]))
+    / sum by (job, instance) (rate(requests_total[5m]))
+    > 0.05
+  for: 5m
+  labels:
+    severity: critical
+  annotations:
+    summary: "Error rate above 5%"
+```
+
+### Changing Slack Notification Format
+
+Edit `alertmanager/alertmanager.yml`. The template has access to all Prometheus labels:
+
+```yaml
+text: |
+  {{ range .Alerts }}
+  *{{ .Labels.alertname }}*
+  Job: `{{ .Labels.job }}` | Instance: `{{ .Labels.instance }}`
+  {{ .Annotations.summary }}
+  {{ end }}
+```
+
+### Adding Grafana Dashboards
+
+Export a dashboard as JSON from Grafana UI, save it to `grafana/dashboards/`, and add a dashboard provisioner in the Grafana Dockerfile.
+
+## Environment Variables
+
+### Prometheus
+No env vars required. Config is baked into the image.
+
+### Alertmanager
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SLACK_WEBHOOK_ALERTS` | Yes | Slack incoming webhook URL |
+
+### Grafana
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `PROMETHEUS_INTERNAL_URL` | Yes | e.g., `http://prometheus.railway.internal:9090` |
+| `GF_SECURITY_ADMIN_USER` | No | Admin username (default: `admin`) |
+| `GF_SECURITY_ADMIN_PASSWORD` | No | Admin password |
+
+## Current Alert Rules
+
+### Critical
+
+| Alert | Condition | Fires After |
+|-------|-----------|-------------|
+| APITargetDown | `up{job="api"} == 0` | 2m |
+| AgentsWorkerDown | `up{job="agents-worker"} == 0` | 2m |
+| ETLWorkerDown | `up{job="etl-worker"} == 0` | 2m |
+| AgentsWorkerDead | No active pollers | 2m |
+| ETLWorkerDead | No active pollers | 2m |
+| ActivityQueueBacklog | p95 schedule-to-start > 5s | 5m |
+| WorkflowTaskQueueBacklog | p95 schedule-to-start > 2s | 5m |
+
+### Warning
+
+| Alert | Condition | Fires After |
+|-------|-----------|-------------|
+| APIHighErrorRate | 5xx rate > 5% | 5m |
+| APIHighLatency | p95 > 2s | 5m |
+| WorkerSaturated | Activity slots < 5 | 10m |
+| HighWorkflowFailureRate | Failure rate > 5% | 10m |
+| WorkflowTaskExecutionFailures | Any execution failures | 5m |
+| ActivityFailureSpike | Failures > 0.1/s | 5m |
+| SlowActivities | p95 latency > 60s | 5m |
+| TemporalGRPCFailureRateHigh | gRPC failure rate > 5% | 5m |
+| TemporalLongPollFailureRateHigh | Long-poll failure rate > 5% | 5m |
+| StickyCachePressure | Eviction rate > 1/s | 10m |
+| StickyCacheLowHitRatio | Hit ratio < 50% | 10m |
+| WorkflowWorkerSaturated | Workflow task slots < 5 | 10m |
