@@ -45,8 +45,7 @@ Prometheus + Alertmanager + Grafana deployed on Railway. Metrics collection, ale
 ├── grafana/
 │   ├── Dockerfile
 │   ├── railway.toml
-│   └── datasources/
-│       └── datasources.yml   # Prometheus datasource
+│   └── datasources.yml   # Prometheus datasource
 │
 └── docker-compose.yml         # Local development
 ```
@@ -152,7 +151,10 @@ Export a dashboard as JSON from Grafana UI, save it to `grafana/dashboards/`, an
 ## Environment Variables
 
 ### Prometheus
-No env vars required. Config is baked into the image.
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `ALERTMANAGER_INTERNAL_URL` | Yes | e.g., `alertmanager.railway.internal:9093` |
 
 ### Alertmanager
 
