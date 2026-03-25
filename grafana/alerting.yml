@@ -1,0 +1,17 @@
+apiVersion: 1
+
+deleteRules:
+  - orgId: 1
+    folderUID: ""
+    group: api-alerts
+  - orgId: 1
+    folderUID: ""
+    group: worker-alerts
+  - orgId: 1
+    folderUID: ""
+    group: temporal-critical-alerts
+  - orgId: 1
+    folderUID: ""
+    group: temporal-warning-alerts
+
+groups: []
