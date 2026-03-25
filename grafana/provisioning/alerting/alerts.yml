@@ -51,7 +51,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: sum(rate(http_requests_total{job="api", status=~"5.."}[5m]))
+              expr: sum(rate(http_requests_total{job="api", status=~"5.."}[5m])) by (job, instance)
           - refId: B
             datasourceUid: grafana_prometheus
             relativeTimeRange:
@@ -59,7 +59,7 @@ groups:
               to: 0
             model:
               refId: B
-              expr: sum(rate(http_requests_total{job="api"}[5m]))
+              expr: sum(rate(http_requests_total{job="api"}[5m])) by (job, instance)
           - refId: C
             datasourceUid: "__expr__"
             relativeTimeRange:
@@ -95,7 +95,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="api"}[5m])) by (le)) > 2
+              expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="api"}[5m])) by (le, job, instance)) > 2
 
   - orgId: 1
     name: worker-alerts
@@ -227,7 +227,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: histogram_quantile(0.95, sum(rate(temporal_activity_schedule_to_start_latency_bucket[5m])) by (le, job)) > 5
+              expr: histogram_quantile(0.95, sum(rate(temporal_activity_schedule_to_start_latency_bucket[5m])) by (le, job, instance)) > 5
 
       # ---------------------------------------------------------------
       # Workflow task queue backlog — workflow tasks waiting too long
@@ -250,7 +250,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: histogram_quantile(0.95, sum(rate(temporal_workflow_task_schedule_to_start_latency_bucket[5m])) by (le, job)) > 2
+              expr: histogram_quantile(0.95, sum(rate(temporal_workflow_task_schedule_to_start_latency_bucket[5m])) by (le, job, instance)) > 2
 
   # ====================================================================
   # Temporal Worker Alerts — Warning
@@ -281,7 +281,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: min(temporal_worker_task_slots_available{worker_type=~"ActivityWorker|activity"}) by (job) < 5
+              expr: min(temporal_worker_task_slots_available{worker_type=~"ActivityWorker|activity"}) by (job, instance) < 5
 
       # ---------------------------------------------------------------
       # High workflow failure rate (> 5% over 10 min)
@@ -305,7 +305,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: sum(rate(temporal_workflow_failed[5m])) by (job)
+              expr: sum(rate(temporal_workflow_failed[5m])) by (job, instance)
           - refId: B
             datasourceUid: grafana_prometheus
             relativeTimeRange:
@@ -313,7 +313,7 @@ groups:
               to: 0
             model:
               refId: B
-              expr: clamp_min(sum(rate(temporal_workflow_completed[5m]) + rate(temporal_workflow_failed[5m])) by (job), 0.001)
+              expr: clamp_min(sum(rate(temporal_workflow_completed[5m]) + rate(temporal_workflow_failed[5m])) by (job, instance), 0.001)
           - refId: C
             datasourceUid: "__expr__"
             relativeTimeRange:
@@ -350,7 +350,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: sum(rate(temporal_workflow_task_execution_failed[5m])) by (job) > 0
+              expr: sum(rate(temporal_workflow_task_execution_failed[5m])) by (job, instance) > 0
 
       # ---------------------------------------------------------------
       # Activity failure spike
@@ -373,7 +373,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: sum(rate(temporal_activity_execution_failed[5m])) by (job) > 0.1
+              expr: sum(rate(temporal_activity_execution_failed[5m])) by (job, instance) > 0.1
 
       # ---------------------------------------------------------------
       # Slow activities — p95 > 60s
@@ -396,7 +396,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: histogram_quantile(0.95, sum(rate(temporal_activity_execution_latency_bucket[5m])) by (le, job)) > 60
+              expr: histogram_quantile(0.95, sum(rate(temporal_activity_execution_latency_bucket[5m])) by (le, job, instance)) > 60
 
       # ---------------------------------------------------------------
       # gRPC failure rate to Temporal server (> 5%)
@@ -419,7 +419,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: sum(rate(temporal_request_failure[5m])) by (job)
+              expr: sum(rate(temporal_request_failure[5m])) by (job, instance)
           - refId: B
             datasourceUid: grafana_prometheus
             relativeTimeRange:
@@ -427,7 +427,7 @@ groups:
               to: 0
             model:
               refId: B
-              expr: sum(rate(temporal_request[5m])) by (job)
+              expr: sum(rate(temporal_request[5m])) by (job, instance)
           - refId: C
             datasourceUid: "__expr__"
             relativeTimeRange:
@@ -463,7 +463,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: sum(rate(temporal_long_request_failure[5m])) by (job)
+              expr: sum(rate(temporal_long_request_failure[5m])) by (job, instance)
           - refId: B
             datasourceUid: grafana_prometheus
             relativeTimeRange:
@@ -471,7 +471,7 @@ groups:
               to: 0
             model:
               refId: B
-              expr: sum(rate(temporal_long_request[5m])) by (job)
+              expr: sum(rate(temporal_long_request[5m])) by (job, instance)
           - refId: C
             datasourceUid: "__expr__"
             relativeTimeRange:
@@ -507,7 +507,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: sum(rate(temporal_sticky_cache_total_forced_eviction[5m])) by (job) > 1
+              expr: sum(rate(temporal_sticky_cache_total_forced_eviction[5m])) by (job, instance) > 1
 
       # ---------------------------------------------------------------
       # Sticky cache low hit ratio (> 50% misses)
@@ -530,7 +530,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: sum(rate(temporal_sticky_cache_miss[5m])) by (job)
+              expr: sum(rate(temporal_sticky_cache_miss[5m])) by (job, instance)
           - refId: B
             datasourceUid: grafana_prometheus
             relativeTimeRange:
@@ -538,7 +538,7 @@ groups:
               to: 0
             model:
               refId: B
-              expr: clamp_min(sum(rate(temporal_sticky_cache_hit[5m]) + rate(temporal_sticky_cache_miss[5m])) by (job), 0.001)
+              expr: clamp_min(sum(rate(temporal_sticky_cache_hit[5m]) + rate(temporal_sticky_cache_miss[5m])) by (job, instance), 0.001)
           - refId: C
             datasourceUid: "__expr__"
             relativeTimeRange:
@@ -574,4 +574,4 @@ groups:
               to: 0
             model:
               refId: A
-              expr: min(temporal_worker_task_slots_available{worker_type=~"WorkflowWorker|workflow"}) by (job) < 5
+              expr: min(temporal_worker_task_slots_available{worker_type=~"WorkflowWorker|workflow"}) by (job, instance) < 5
