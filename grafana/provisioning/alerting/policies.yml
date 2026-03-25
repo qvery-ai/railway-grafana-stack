@@ -1,12 +1,5 @@
 apiVersion: 1
 
-policies:
-  - orgId: 1
-    receiver: slack-alerts
-    group_by:
-      - alertname
-      - job
-      - instance
-    group_wait: 30s
-    group_interval: 5m
-    repeat_interval: 4h
+# Notification policies are now managed by Alertmanager.
+# See alertmanager/alertmanager.yml for routing configuration.
+policies: []
