@@ -227,7 +227,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: histogram_quantile(0.95, sum(rate(temporal_activity_schedule_to_start_latency_bucket[5m])) by (le, job, instance)) > 5
+              expr: histogram_quantile(0.95, sum(rate(temporal_activity_schedule_to_start_latency_bucket[5m])) by (le, job, instance)) > 5000
 
       # ---------------------------------------------------------------
       # Workflow task queue backlog — workflow tasks waiting too long
@@ -250,7 +250,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: histogram_quantile(0.95, sum(rate(temporal_workflow_task_schedule_to_start_latency_bucket[5m])) by (le, job, instance)) > 2
+              expr: histogram_quantile(0.95, sum(rate(temporal_workflow_task_schedule_to_start_latency_bucket[5m])) by (le, job, instance)) > 2000
 
   # ====================================================================
   # Temporal Worker Alerts — Warning
@@ -396,7 +396,7 @@ groups:
               to: 0
             model:
               refId: A
-              expr: histogram_quantile(0.95, sum(rate(temporal_activity_execution_latency_bucket[5m])) by (le, job, instance)) > 60
+              expr: histogram_quantile(0.95, sum(rate(temporal_activity_execution_latency_bucket[5m])) by (le, job, instance)) > 60000
 
       # ---------------------------------------------------------------
       # gRPC failure rate to Temporal server (> 5%)
