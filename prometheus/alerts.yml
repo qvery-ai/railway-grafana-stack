@@ -23,13 +23,22 @@ groups:
           description: "1. Check API logs for error stack traces and common 5xx patterns. 2. Look for recent deployments that may have introduced regressions. 3. Verify downstream dependencies (database, Temporal, external APIs) are healthy. 4. Check if the error is isolated to specific endpoints using per-route metrics."
 
       - alert: APIHighLatency
-        expr: histogram_quantile(0.95, sum by (le, job, instance) (rate(http_request_duration_seconds_bucket{job="api"}[5m]))) > 2
+        expr: histogram_quantile(0.95, sum by (le, job, instance) (rate(http_request_duration_seconds_bucket{job="api", handler!~".*/stream"}[5m]))) > 2
         for: 5m
         labels:
           severity: warning
         annotations:
           summary: "API p95 latency is above 2 seconds"
-          description: "1. Identify slow endpoints from per-route latency metrics. 2. Check database query performance and connection pool usage. 3. Look for resource contention (CPU, memory) on the API service. 4. Verify external API dependencies are responding within SLA."
+          description: "1. Identify slow endpoints from per-route latency metrics. 2. Check database query performance and connection pool usage. 3. Look for resource contention (CPU, memory) on the API service. 4. Verify external API dependencies are responding within SLA. Note: SSE streaming endpoints are excluded from this alert — they have long-lived connections by design."
+
+      - alert: APIStreamingTimeout
+        expr: histogram_quantile(0.95, sum by (le, job, instance) (rate(http_request_duration_seconds_bucket{job="api", handler=~".*/stream"}[5m]))) > 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSE streaming responses are exceeding 30 seconds"
+          description: "1. Check if LLM provider is responding slowly or timing out. 2. Look for stuck streaming connections that are not completing. 3. Verify agent workflow execution is progressing (check Temporal). 4. Review API logs for streaming errors or connection drops."
 
   # ====================================================================
   # Worker Target Alerts
