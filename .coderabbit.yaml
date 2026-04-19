@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+#
+# CodeRabbit config — Qvery Observability Stack
+# Stack: Prometheus 3.2 / Alertmanager 0.28 / Grafana 11.5 / Docker / Railway
+#
+# Philosophy: CodeRabbit acts as the sole reviewer on most PRs —
+# configured to be strict (assertive), block bad PRs (request_changes_workflow),
+# and auto-review every non-draft PR targeting the default branch.
+# This is an infrastructure/configuration repo — no application code.
+
+language: en-US
+early_access: false
+
+reviews:
+  profile: assertive
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+
+  # Most base path_filters don't apply (no JS/Python artifacts),
+  # but kept for safety in case tooling is added later.
+  path_filters:
+    # This is a config-only repo (YAML, Dockerfiles, shell scripts).
+    # Almost everything is reviewable — only exclude conductor artifacts.
+    - "!.conductor/**"
+
+  # path_instructions: Add review rules here as gaps emerge from
+  # real reviews. See git history for a starter set covering
+  # prometheus alerts, alertmanager routing, and grafana config.
+  path_instructions: []
+
+  tools:
+    github-checks:
+      enabled: true
+      timeout_ms: 90000
+    languagetool:
+      enabled: false
+    markdownlint:
+      enabled: false
+
+chat:
+  auto_reply: true

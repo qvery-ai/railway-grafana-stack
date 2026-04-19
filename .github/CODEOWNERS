@@ -1,0 +1,4 @@
+# CodeRabbit must approve all PRs before merge.
+# Works with branch protection → "Require review from Code Owners."
+
+* @coderabbitai
