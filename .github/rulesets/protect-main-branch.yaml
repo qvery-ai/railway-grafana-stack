@@ -1,7 +1,3 @@
-# Branch ruleset: protect the default branch.
-# Applied via GitHub API — this file is the source of truth.
-# Re-export with: .github/scripts/export-rulesets.sh
-
 name: protect-main-branch
 target: branch
 enforcement: active
