@@ -16,13 +16,16 @@ mkdir -p "$OUTDIR"
 
 echo "Exporting rulesets for $REPO → $OUTDIR/"
 
-gh api "repos/$REPO/rulesets" --jq '.[].id' | while read -r id; do
-  gh api "repos/$REPO/rulesets/$id" | \
-    yq -P 'del(.id, .node_id, ._links, .created_at, .updated_at, .current_user_can_bypass, .source, .source_type)' -o yaml \
-    > "$OUTDIR/$(gh api "repos/$REPO/rulesets/$id" --jq '.name').yaml"
+gh api --paginate "repos/$REPO/rulesets" --jq '.[].id' | while read -r id; do
+  ruleset_json="$(gh api "repos/$REPO/rulesets/$id")"
+  name="$(yq -r '.name' <<<"$ruleset_json")"
+  safe_name="$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9._-' '-')"
+  file_path="$OUTDIR/${safe_name:-ruleset-$id}.yaml"
 
-  name=$(gh api "repos/$REPO/rulesets/$id" --jq '.name')
-  echo "  ✓ $name → $OUTDIR/$name.yaml"
+  yq -P 'del(.id, .node_id, ._links, .created_at, .updated_at, .current_user_can_bypass, .source, .source_type)' -o yaml \
+    <<<"$ruleset_json" > "$file_path"
+
+  echo "  ✓ $name → $file_path"
 done
 
 echo "Done. Review changes with: git diff .github/rulesets/"
