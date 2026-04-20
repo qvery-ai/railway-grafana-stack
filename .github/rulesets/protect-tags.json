@@ -3,7 +3,7 @@
   "name": "protect-tags",
   "target": "tag",
   "source_type": "Repository",
-  "source": "qvery-ai/platform",
+  "source": "qvery-ai/railway-grafana-stack",
   "enforcement": "active",
   "conditions": {
     "ref_name": {
