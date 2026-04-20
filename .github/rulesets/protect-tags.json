@@ -1,0 +1,28 @@
+{
+  "id": 15259589,
+  "name": "protect-tags",
+  "target": "tag",
+  "source_type": "Repository",
+  "source": "qvery-ai/platform",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "exclude": [],
+      "include": [
+        "~ALL"
+      ]
+    }
+  },
+  "rules": [
+    {
+      "type": "deletion"
+    },
+    {
+      "type": "non_fast_forward"
+    },
+    {
+      "type": "update"
+    }
+  ],
+  "bypass_actors": []
+}
