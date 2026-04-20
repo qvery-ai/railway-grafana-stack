@@ -13,6 +13,7 @@ REPO="${1:-$(gh repo view --json nameWithOwner -q .nameWithOwner)}"
 OUTDIR="$(git rev-parse --show-toplevel)/.github/rulesets"
 
 mkdir -p "$OUTDIR"
+rm -f "$OUTDIR"/*.yaml
 
 echo "Exporting rulesets for $REPO → $OUTDIR/"
 
