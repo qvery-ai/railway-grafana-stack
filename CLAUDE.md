@@ -60,7 +60,7 @@ docker-compose config
 
 ## When to Modify This Repo
 
-- Platform emits new Prometheus metrics → add scrape target in `prom.yml`
-- New alert needed → add rule group in `alerts.yml`
+- Platform emits new Prometheus metrics → add scrape target in `prometheus/prom.yml`
+- New alert needed → add rule group in `prometheus/alerts.yml`
 - New Grafana dashboard → add JSON provisioning in `grafana/`
-- Alert routing change → modify `alertmanager.yml`
+- Alert routing change → modify `alertmanager/alertmanager.yml`

@@ -24,7 +24,11 @@ Optional PR number: $ARGUMENTS
 
 4. **Apply fixes** for all APPLY items:
    - Make the config changes
-   - Validate: `docker-compose config`
+   - Validate:
+     - `docker-compose config`
+     - `promtool check config prometheus/prom.yml` (if `prometheus/` changed)
+     - `promtool check rules prometheus/alerts.yml` (if `prometheus/alerts.yml` changed)
+     - `amtool check-config alertmanager/alertmanager.yml` (if `alertmanager/` changed)
 
 5. **Commit and push**:
    ```

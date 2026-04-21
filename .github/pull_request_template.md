@@ -12,9 +12,9 @@
 <!-- Config changes, new alerts/dashboards, scrape targets. -->
 
 ## Validation
-- [ ] `promtool check config prometheus/prom.yml`
-- [ ] `promtool check rules prometheus/alerts.yml`
-- [ ] `amtool check-config alertmanager/alertmanager.yml`
+- [ ] `promtool check config prometheus/prom.yml` (if `prometheus/` changed)
+- [ ] `promtool check rules prometheus/alerts.yml` (if `prometheus/alerts.yml` changed)
+- [ ] `amtool check-config alertmanager/alertmanager.yml` (if `alertmanager/` changed)
 - [ ] `docker-compose config`
 
 ## Checklist

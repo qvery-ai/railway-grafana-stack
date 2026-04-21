@@ -9,8 +9,8 @@ Optional context: $ARGUMENTS
 3. Run validation:
    - `docker-compose config`
    - `promtool check config prometheus/prom.yml` (if prometheus/ changed)
-   - `promtool check rules prometheus/alerts.yml` (if alerts changed)
-   - `amtool check-config alertmanager/alertmanager.yml` (if alertmanager changed)
+   - `promtool check rules prometheus/alerts.yml` (if `prometheus/alerts.yml` changed)
+   - `amtool check-config alertmanager/alertmanager.yml` (if `alertmanager/` changed)
 4. If validation fails, fix issues first and commit
 5. Draft PR using the `.github/pull_request_template.md` structure:
    - TLDR (one sentence)
